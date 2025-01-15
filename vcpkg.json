@@ -1,0 +1,23 @@
+{
+  "dependencies": [
+    "boost-filesystem",
+    "boost-optional",
+    "cppcodec",
+    "draco",
+    "fmt",
+    "libiconv",
+    "libxml2",
+    "nlohmann-fifo-map",
+    "zlib"
+  ],
+  "overrides": [
+    {
+      "name": "fmt",
+      "version": "5.3.0"
+    },
+    {
+      "name": "libiconv",
+      "version": "1.15-6"
+    }
+  ]
+}
