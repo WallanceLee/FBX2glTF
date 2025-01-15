@@ -32,7 +32,7 @@
 #include "mathfu.hpp"
 
 // give all modules access to our tweaked JSON
-#include <fifo_map.hpp>
+#include <nlohmann/fifo_map.hpp>
 #include <json.hpp>
 
 template <class K, class V, class ignore, class A>
