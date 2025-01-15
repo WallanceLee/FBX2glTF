@@ -1,117 +1,63 @@
 cmake_minimum_required(VERSION 3.5)
 project(FBX2glTF)
 
-set(typical_usage_str
-  "Example usage:\n\
-  > mkdir -p build_debug\n\
-  > conan install . -i build_debug -s build_type=Debug -e FBXSDK_SDKS=/home/zell/FBXSDK\n\
-  > conan build . -bf build_debug")
-
-if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-  message(FATAL_ERROR
-    "Building from within the source tree is not supported! ${typical_usage_str}")
-endif ()
-
 set(CMAKE_CXX_STANDARD 11)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 include(ExternalProject)
 
 # FBX
-foreach (FBXSDK_VERSION "2019.2")
-  find_package(FBX)
-  if (FBXSDK_FOUND)
-    break()
-  endif()
-endforeach(FBXSDK_VERSION)
+foreach (FBXSDK_VERSION "2020.3.7")
+    find_package(FBX)
+    if (FBXSDK_FOUND)
+        break()
+    endif ()
+endforeach (FBXSDK_VERSION)
 if (NOT FBXSDK_FOUND)
-  message(FATAL_ERROR
-    "Can't find FBX SDK in either:\n"
-    " - Mac OS X: ${FBXSDK_APPLE_ROOT}\n"
-    " - Windows: ${FBXSDK_WINDOWS_ROOT}\n"
-    " - Linux: ${FBXSDK_LINUX_ROOT}"
-  )
-endif()
-
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan_paths.cmake")
-  message(FATAL_ERROR
-    "The Conan package manager must run ('install') first. ${typical_usage_str}")
-endif()
-include("${CMAKE_BINARY_DIR}/conan_paths.cmake")
+    message(FATAL_ERROR
+            "Can't find FBX SDK in either:\n"
+            " - Mac OS X: ${FBXSDK_APPLE_ROOT}\n"
+            " - Windows: ${FBXSDK_WINDOWS_ROOT}\n"
+            " - Linux: ${FBXSDK_LINUX_ROOT}"
+    )
+endif ()
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_BINARY_DIR}")
+set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 
 # stuff we get from Conan
-find_package(boost_filesystem MODULE REQUIRED)
-find_package(boost_optional MODULE REQUIRED)
-find_package(libxml2 MODULE REQUIRED)
-find_package(zlib MODULE REQUIRED)
-find_package(fmt MODULE REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem optional)
+find_package(nlohmann-fifo-map CONFIG REQUIRED)
+find_package(LibXml2 REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(draco CONFIG REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# DRACO
-ExternalProject_Add(Draco
-  GIT_REPOSITORY https://github.com/google/draco
-  GIT_TAG 1.3.4
-  PREFIX draco
-  INSTALL_DIR
-  CMAKE_ARGS
-        -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-        -DBUILD_FOR_GLTF=1
-)
-set(DRACO_INCLUDE_DIR "${CMAKE_BINARY_DIR}/draco/include")
-if (WIN32)
-   set(DRACO_LIB "${CMAKE_BINARY_DIR}/draco/lib/dracoenc.lib")
-else()
-   set(DRACO_LIB "${CMAKE_BINARY_DIR}/draco/lib/libdracoenc.a")
-endif()
 
 # MATHFU
 set(mathfu_build_benchmarks OFF CACHE BOOL "")
 set(mathfu_build_tests OFF CACHE BOOL "")
 ExternalProject_Add(MathFu
-  PREFIX mathfu
-  GIT_REPOSITORY https://github.com/google/mathfu
-  GIT_TAG v1.1.0
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu configure step."
-  BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu build step."
-  INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu install step."
+        PREFIX mathfu
+        GIT_REPOSITORY https://github.com/google/mathfu
+        GIT_TAG v1.1.0
+        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu configure step."
+        BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu build step."
+        INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu install step."
 )
 set(MATHFU_INCLUDE_DIRS
         "${CMAKE_BINARY_DIR}/mathfu/src/MathFu/include/"
         "${CMAKE_BINARY_DIR}/mathfu/src/MathFu/dependencies/vectorial/include")
 
-# OrderedMap
-ExternalProject_Add(FiFoMap
-  PREFIX fifo_map
-  GIT_REPOSITORY https://github.com/nlohmann/fifo_map
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Skipping FiFoMap configure step."
-  BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Skipping FiFoMap build step."
-  INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping FiFoMap install step."
-)
-set(FIFO_MAP_INCLUDE_DIR "${CMAKE_BINARY_DIR}/fifo_map/src/FiFoMap/src")
-
-
-# cppcodec
-ExternalProject_Add(CPPCodec
-  PREFIX cppcodec
-  GIT_REPOSITORY https://github.com/tplgy/cppcodec
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Skipping CPPCodec configure step."
-  BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Skipping CPPCodec build step."
-  INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping CPPCodec install step."
-)
-set(CPPCODEC_INCLUDE_DIR "${CMAKE_BINARY_DIR}/cppcodec/src/CPPCodec")
-
 if (APPLE)
     find_library(CF_FRAMEWORK CoreFoundation)
     message("CoreFoundation Framework: ${CF_FRAMEWORK}")
     set(FRAMEWORKS ${CF_FRAMEWORK})
-endif()
+endif ()
 
 set(LIB_SOURCE_FILES
         src/FBX2glTF.h
@@ -181,66 +127,64 @@ add_executable(appFBX2glTF src/FBX2glTF.cpp)
 set_target_properties(appFBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
 
 add_dependencies(libFBX2glTF
-  Draco
-  MathFu
-  FiFoMap
-  CPPCodec
+        MathFu
 )
 
 if (NOT MSVC)
-  # Disable annoying & spammy warning from FBX SDK header file
-  target_compile_options(libFBX2glTF PRIVATE
-    "-Wno-null-dereference"
-    "-Wunused"
+    # Disable annoying & spammy warning from FBX SDK header file
+    target_compile_options(libFBX2glTF PRIVATE
+            "-Wno-null-dereference"
+            "-Wunused"
     )
-  target_compile_options(appFBX2glTF PRIVATE
-    "-Wno-null-dereference"
-    "-Wunused"
+    target_compile_options(appFBX2glTF PRIVATE
+            "-Wno-null-dereference"
+            "-Wunused"
     )
-endif()
+endif ()
 
 target_link_libraries(libFBX2glTF
-  ${FRAMEWORKS}
-  boost_filesystem::boost_filesystem
-  boost_optional::boost_optional
-  ${DRACO_LIB}
-  optimized ${FBXSDK_LIBRARY}
-  debug ${FBXSDK_LIBRARY_DEBUG}
-  fmt::fmt
-  libxml2::libxml2
-  zlib::zlib
-  ${CMAKE_DL_LIBS}
-  ${CMAKE_THREAD_LIBS_INIT}
+        ${FRAMEWORKS}
+        Boost::filesystem
+        Boost::optional
+	    draco::draco
+        optimized ${FBXSDK_LIBRARY}
+        debug ${FBXSDK_LIBRARY_DEBUG}
+        fmt::fmt-header-only
+        LibXml2::LibXml2
+        ZLIB::ZLIB
+        nlohmann-fifo-map::nlohmann-fifo-map
+        ${CMAKE_DL_LIBS}
+        ${CMAKE_THREAD_LIBS_INIT}
 )
 
 if (APPLE)
- find_package(Iconv MODULE REQUIRED)
- target_link_libraries(libFBX2glTF Iconv)
-else()
- find_package(libiconv MODULE REQUIRED)
- target_link_libraries(libFBX2glTF libiconv::libiconv)
-endif()
+    find_package(Iconv MODULE REQUIRED)
+    target_link_libraries(libFBX2glTF Iconv)
+else ()
+	find_package(unofficial-iconv CONFIG REQUIRED)
+    target_link_libraries(libFBX2glTF unofficial::iconv::libiconv unofficial::iconv::libcharset)
+endif ()
 
 target_include_directories(libFBX2glTF PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+
 target_include_directories(libFBX2glTF SYSTEM PUBLIC
-  "third_party/stb"
-  "third_party/json"
-  ${FBXSDK_INCLUDE_DIR}
-  ${DRACO_INCLUDE_DIR}
-  ${MATHFU_INCLUDE_DIRS}
-  ${FIFO_MAP_INCLUDE_DIR}
-  ${CPPCODEC_INCLUDE_DIR}
+        "third_party/stb"
+        "third_party/json"
+        ${FBXSDK_INCLUDE_DIR}
+        ${MATHFU_INCLUDE_DIRS}
+        ${CPPCODEC_INCLUDE_DIRS}
+        ${draco_INCLUDE_DIRS}
 )
 
 target_include_directories(appFBX2glTF PUBLIC
-  "third_party/CLI11"
+        "third_party/CLI11"
 )
 target_link_libraries(appFBX2glTF libFBX2glTF)
 
-install (TARGETS libFBX2glTF appFBX2glTF
+install(TARGETS libFBX2glTF appFBX2glTF
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib
 )
