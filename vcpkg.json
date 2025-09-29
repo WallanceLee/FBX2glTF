@@ -1,7 +1,5 @@
 {
   "dependencies": [
-    "boost-filesystem",
-    "boost-optional",
     "draco",
     "fmt",
     "glm",

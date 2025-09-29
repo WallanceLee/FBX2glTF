@@ -29,7 +29,6 @@ find_package(Threads REQUIRED)
 set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 
 # stuff we get from Conan
-find_package(Boost REQUIRED CONFIG COMPONENTS filesystem optional)
 find_package(nlohmann-fifo-map CONFIG REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
@@ -130,8 +129,6 @@ endif ()
 
 target_link_libraries(libFBX2glTF
         ${FRAMEWORKS}
-        Boost::filesystem
-        Boost::optional
 	    draco::draco
         optimized ${FBXSDK_LIBRARY}
         debug ${FBXSDK_LIBRARY_DEBUG}
