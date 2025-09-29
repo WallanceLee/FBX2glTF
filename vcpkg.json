@@ -2,14 +2,13 @@
   "dependencies": [
     "boost-filesystem",
     "boost-optional",
-    "cppcodec",
     "draco",
     "fmt",
+    "glm",
     "libiconv",
     "libxml2",
     "nlohmann-fifo-map",
-    "zlib",
-    "glm"
+    "zlib"
   ],
   "overrides": [
     {
