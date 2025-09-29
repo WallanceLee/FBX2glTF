@@ -14,10 +14,10 @@ std::unique_ptr<FbxRoughMetMaterialInfo> FbxStingrayPBSMaterialResolver::resolve
     return nullptr;
   }
   if (!fbxMaterial->ShadingModel.Get().IsEmpty()) {
-    ::fmt::printf(
-        "Warning: Material %s has surprising shading model: %s\n",
+    fmt::printf(
+        "Warning: Material {} has surprising shading model: {}\n",
         fbxMaterial->GetName(),
-        fbxMaterial->ShadingModel.Get());
+        fbxMaterial->ShadingModel.Get().Buffer());
   }
 
   auto getTex = [&](std::string propName) {
