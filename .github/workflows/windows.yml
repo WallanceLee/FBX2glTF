@@ -1,0 +1,33 @@
+name: windows
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: lukka/get-cmake@latest
+
+      - name: Setup anew (or from cache) vcpkg (and does not build any package)
+        uses: lukka/run-vcpkg@v11 # Always specify the specific _version_ of the
+
+      - name: Download Autodesk FBX SDK
+        env:
+          DOWNLOAD_URL: https://damassets.autodesk.net/content/dam/autodesk/www/files/fbx202037_fbxsdk_vs2022_win.exe
+        run: |
+          Write-Host "Downloading $env:DOWNLOAD_URL ..."
+          curl -L -o fbx-sdk.exe $env:DOWNLOAD_URL
+
+      - name: Install Autodesk FBX SDK (Silent Mode)
+        run: |
+          Start-Process -FilePath "fbx-sdk.exe" -ArgumentList "/S" -Wait -NoNewWindow
+
+      - name: Configure and Build
+        run: |
+          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake -DFBXSDK_SDKS="C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.7"
+          cmake --build build --config Release
