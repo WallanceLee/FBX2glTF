@@ -160,8 +160,6 @@ target_include_directories(libFBX2glTF PUBLIC
 
 
 target_include_directories(libFBX2glTF SYSTEM PUBLIC
-        "third_party/stb"
-        "third_party/json"
         ${FBXSDK_INCLUDE_DIR}
         ${draco_INCLUDE_DIRS}
         ${Stb_INCLUDE_DIR}
