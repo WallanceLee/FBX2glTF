@@ -36,6 +36,7 @@ find_package(ZLIB REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(draco CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -140,6 +141,7 @@ target_link_libraries(libFBX2glTF
         ${CMAKE_DL_LIBS}
         ${CMAKE_THREAD_LIBS_INIT}
         glm::glm-header-only
+        nlohmann_json::nlohmann_json
 )
 
 if (APPLE)
