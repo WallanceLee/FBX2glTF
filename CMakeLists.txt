@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(FBX2glTF)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -35,24 +35,10 @@ find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(draco CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# MATHFU
-set(mathfu_build_benchmarks OFF CACHE BOOL "")
-set(mathfu_build_tests OFF CACHE BOOL "")
-ExternalProject_Add(MathFu
-        PREFIX mathfu
-        GIT_REPOSITORY https://github.com/google/mathfu
-        GIT_TAG v1.1.0
-        CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu configure step."
-        BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu build step."
-        INSTALL_COMMAND ${CMAKE_COMMAND} -E echo "Skipping MathFu install step."
-)
-set(MATHFU_INCLUDE_DIRS
-        "${CMAKE_BINARY_DIR}/mathfu/src/MathFu/include/"
-        "${CMAKE_BINARY_DIR}/mathfu/src/MathFu/dependencies/vectorial/include")
 
 if (APPLE)
     find_library(CF_FRAMEWORK CoreFoundation)
@@ -127,9 +113,6 @@ set_target_properties(libFBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
 add_executable(appFBX2glTF src/FBX2glTF.cpp)
 set_target_properties(appFBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
 
-add_dependencies(libFBX2glTF
-        MathFu
-)
 
 if (NOT MSVC)
     # Disable annoying & spammy warning from FBX SDK header file
@@ -156,6 +139,7 @@ target_link_libraries(libFBX2glTF
         nlohmann-fifo-map::nlohmann-fifo-map
         ${CMAKE_DL_LIBS}
         ${CMAKE_THREAD_LIBS_INIT}
+        glm::glm-header-only
 )
 
 if (APPLE)
@@ -175,7 +159,6 @@ target_include_directories(libFBX2glTF SYSTEM PUBLIC
         "third_party/stb"
         "third_party/json"
         ${FBXSDK_INCLUDE_DIR}
-        ${MATHFU_INCLUDE_DIRS}
         ${CPPCODEC_INCLUDE_DIRS}
         ${draco_INCLUDE_DIRS}
 )

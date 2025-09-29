@@ -664,7 +664,8 @@ ModelData* Raw2Gltf(
             // glTF uses column-major matrices
             std::vector<Mat4f> inverseBindMatrices;
             for (const auto& inverseBindMatrice : rawSurface.inverseBindMatrices) {
-              inverseBindMatrices.push_back(inverseBindMatrice.Transpose());
+              // glm::mat4 does not have Transpose() member — use glm::transpose
+              inverseBindMatrices.push_back(glm::transpose(inverseBindMatrice));
             }
 
             std::vector<uint32_t> jointIndexes;

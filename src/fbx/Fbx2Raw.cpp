@@ -11,13 +11,10 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstdint>
 #include <cstdio>
-#include <fstream>
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "FBX2glTF.h"
@@ -31,6 +28,10 @@
 #include "FbxSkinningAccess.hpp"
 #include "materials/RoughnessMetallicMaterials.hpp"
 #include "materials/TraditionalMaterials.hpp"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 float scaleFactor;
 
@@ -184,8 +185,9 @@ static void ReadMesh(
 
   RawSurface& rawSurface = raw.GetSurface(rawSurfaceIndex);
 
-  Mat4f scaleMatrix = Mat4f::FromScaleVector(Vec3f(scaleFactor, scaleFactor, scaleFactor));
-  Mat4f invScaleMatrix = scaleMatrix.Inverse();
+  // build scale matrix with GLM and invert
+  Mat4f scaleMatrix = glm::scale(Mat4f(1.0f), Vec3f(scaleFactor, scaleFactor, scaleFactor));
+  Mat4f invScaleMatrix = glm::inverse(scaleMatrix);
 
   rawSurface.skeletonRootId =
       (skinning.IsSkinned()) ? skinning.GetRootNode() : pNode->GetUniqueID();
@@ -580,7 +582,8 @@ static void ReadCamera(RawModel& raw, FbxScene* pScene, FbxNode* pNode) {
   auto nodeIdx = raw.GetNodeById(pNode->GetUniqueID());
   auto& rawNode = raw.GetNode(nodeIdx);
 
-  auto r = Quatf::FromAngleAxis(-90 * ((float)M_PI / 180.0f), {0.0, 1.0, 0.0});
+  // glm::angleAxis(angle_in_radians, axis)
+  auto r = glm::angleAxis(-90.0f * ((float)M_PI / 180.0f), Vec3f(0.0f, 1.0f, 0.0f));
   rawNode.rotation = rawNode.rotation * r;
 }
 
