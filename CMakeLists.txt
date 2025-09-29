@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(FBX2glTF)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 include(ExternalProject)
@@ -28,7 +29,7 @@ find_package(Threads REQUIRED)
 set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 
 # stuff we get from Conan
-find_package(Boost REQUIRED COMPONENTS filesystem optional)
+find_package(Boost REQUIRED CONFIG COMPONENTS filesystem optional)
 find_package(nlohmann-fifo-map CONFIG REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
