@@ -37,7 +37,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(draco CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(stb REQUIRED)
+find_package(Stb REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
