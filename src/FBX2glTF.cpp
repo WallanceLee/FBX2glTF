@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <CLI11.hpp>
+#include <CLI/CLI.hpp>
 
 #include "FBX2glTF.h"
 #include "fbx/Fbx2Raw.hpp"
@@ -192,48 +192,48 @@ int main(int argc, char* argv[]) {
   app.add_option(
          "--draco-compression-level",
          gltfOptions.draco.compressionLevel,
-         "The compression level to tune Draco to.",
-         true)
+         "The compression level to tune Draco to.")
+      ->capture_default_str()
       ->check(CLI::Range(0, 10))
       ->group("Draco");
 
   app.add_option(
          "--draco-bits-for-position",
          gltfOptions.draco.quantBitsPosition,
-         "How many bits to quantize position to.",
-         true)
+         "How many bits to quantize position to.")
+         ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
   app.add_option(
          "--draco-bits-for-uv",
          gltfOptions.draco.quantBitsTexCoord,
-         "How many bits to quantize UV coordinates to.",
-         true)
+         "How many bits to quantize UV coordinates to.")
+         ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
   app.add_option(
          "--draco-bits-for-normals",
          gltfOptions.draco.quantBitsNormal,
-         "How many bits to quantize nornals to.",
-         true)
+         "How many bits to quantize nornals to.")
+         ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
   app.add_option(
          "--draco-bits-for-colors",
          gltfOptions.draco.quantBitsColor,
-         "How many bits to quantize colors to.",
-         true)
+         "How many bits to quantize colors to.")
+         ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
   app.add_option(
          "--draco-bits-for-other",
          gltfOptions.draco.quantBitsGeneric,
-         "How many bits to quantize all other vertex attributes to.",
-         true)
+         "How many bits to quantize all other vertex attributes to.")
+      ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 

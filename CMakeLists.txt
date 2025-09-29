@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(FBX2glTF)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_TOOLCHAIN_FILE $ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -38,6 +38,7 @@ find_package(draco CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(stb REQUIRED)
+find_package(CLI11 CONFIG REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -107,7 +108,6 @@ set(LIB_SOURCE_FILES
         src/utils/Image_Utils.cpp
         src/utils/Image_Utils.hpp
         src/utils/String_Utils.hpp
-        third_party/CLI11/CLI11.hpp
 )
 
 add_library(libFBX2glTF STATIC ${LIB_SOURCE_FILES})
@@ -143,6 +143,7 @@ target_link_libraries(libFBX2glTF
         ${CMAKE_THREAD_LIBS_INIT}
         glm::glm-header-only
         nlohmann_json::nlohmann_json
+        CLI11::CLI11
 )
 
 if (APPLE)
@@ -166,9 +167,6 @@ target_include_directories(libFBX2glTF SYSTEM PUBLIC
         ${Stb_INCLUDE_DIR}
 )
 
-target_include_directories(appFBX2glTF PUBLIC
-        "third_party/CLI11"
-)
 target_link_libraries(appFBX2glTF libFBX2glTF)
 
 install(TARGETS libFBX2glTF appFBX2glTF
