@@ -9,11 +9,5 @@
     "libxml2",
     "nlohmann-fifo-map",
     "zlib"
-  ],
-  "overrides": [
-    {
-      "name": "libiconv",
-      "version": "1.15-6"
-    }
   ]
 }
