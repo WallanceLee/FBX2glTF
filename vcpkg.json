@@ -8,7 +8,8 @@
     "libiconv",
     "libxml2",
     "nlohmann-fifo-map",
+    "nlohmann-json",
     "zlib",
-    "nlohmann-json"
+    "stb"
   ]
 }

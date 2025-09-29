@@ -37,6 +37,7 @@ find_package(fmt CONFIG REQUIRED)
 find_package(draco CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(stb REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -161,8 +162,8 @@ target_include_directories(libFBX2glTF SYSTEM PUBLIC
         "third_party/stb"
         "third_party/json"
         ${FBXSDK_INCLUDE_DIR}
-        ${CPPCODEC_INCLUDE_DIRS}
         ${draco_INCLUDE_DIRS}
+        ${Stb_INCLUDE_DIR}
 )
 
 target_include_directories(appFBX2glTF PUBLIC
