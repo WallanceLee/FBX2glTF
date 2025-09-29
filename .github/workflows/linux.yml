@@ -46,3 +46,8 @@ jobs:
         run: |
           cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake -DFBXSDK_SDKS=./fbx-sdk-2020.3.7
           cmake --build build -j $(nproc)
+
+      - name: debug
+        if: failure()
+        run: |
+          cat /home/runner/work/FBX2glTF/FBX2glTF/vcpkg/buildtrees/nlohmann-fifo-map/config-x64-linux-out.log
