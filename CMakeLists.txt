@@ -47,6 +47,7 @@ find_package(glm CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
+find_package(Iconv MODULE REQUIRED)
 
 # create a compilation database for e.g. clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -149,18 +150,8 @@ target_link_libraries(libFBX2glTF
         glm::glm-header-only
         nlohmann_json::nlohmann_json
         CLI11::CLI11
+        Iconv
 )
-
-if (APPLE)
-    find_package(Iconv MODULE REQUIRED)
-    target_link_libraries(libFBX2glTF Iconv)
-elif (WIN32)
-    find_package(Iconv MODULE REQUIRED)
-    target_link_libraries(libFBX2glTF Iconv)
-else ()
-	find_package(unofficial-iconv CONFIG REQUIRED)
-    target_link_libraries(libFBX2glTF unofficial::iconv::libiconv unofficial::iconv::libcharset)
-endif ()
 
 target_include_directories(libFBX2glTF PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
