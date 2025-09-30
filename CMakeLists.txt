@@ -155,6 +155,7 @@ target_link_libraries(libFBX2glTF
 
 target_include_directories(libFBX2glTF PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
 )
 
 
