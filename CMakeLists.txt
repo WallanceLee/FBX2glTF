@@ -150,14 +150,13 @@ target_link_libraries(libFBX2glTF
         glm::glm-header-only
         nlohmann_json::nlohmann_json
         CLI11::CLI11
-        Iconv
+        Iconv::Iconv
 )
 
 target_include_directories(libFBX2glTF PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
          ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
 )
-
 
 target_include_directories(libFBX2glTF SYSTEM PUBLIC
         ${FBXSDK_INCLUDE_DIR}
