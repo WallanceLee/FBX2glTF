@@ -8,6 +8,11 @@
 
 #include "LightData.hpp"
 
+// Define M_PI_4 for MSVC compatibility
+#ifndef M_PI_4
+#define M_PI_4 0.785398163397448309616
+#endif
+
 LightData::LightData(
     std::string name,
     Type type,

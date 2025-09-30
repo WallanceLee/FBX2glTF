@@ -14,10 +14,9 @@
 #include <string>
 #include <vector>
 
-#include <stdint.h>
+#include <fmt/printf.h>
 #include <stdio.h>
 
-#include "FBX2glTF.h"
 #include "String_Utils.hpp"
 
 std::vector<std::string> FileUtils::ListFolderFiles(

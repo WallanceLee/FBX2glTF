@@ -32,6 +32,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+// Define M_PI for MSVC compatibility
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 float scaleFactor;
 
@@ -583,7 +589,7 @@ static void ReadCamera(RawModel& raw, FbxScene* pScene, FbxNode* pNode) {
   auto& rawNode = raw.GetNode(nodeIdx);
 
   // glm::angleAxis(angle_in_radians, axis)
-  auto r = glm::angleAxis(-90.0f * ((float)M_PI / 180.0f), Vec3f(0.0f, 1.0f, 0.0f));
+  Quatf r = glm::angleAxis(-90.0f * ((float)M_PI / 180.0f), Vec3f(0.0f, 1.0f, 0.0f));
   rawNode.rotation = rawNode.rotation * r;
 }
 
