@@ -38,7 +38,7 @@ jobs:
           echo "Archive extracted. Listing top-level:"
           ls -la extracted || true
 
-          target="./sdk/Linux/2020.3.7"
+          target="${{ github.workspace }}/sdk/Linux/2020.3.7"
           mkdir -p "$target"
           printf "yes\nyes\n"  | ./extracted/fbx202037_fbxsdk_linux "${target}"
 

@@ -31,6 +31,8 @@ jobs:
           # Try common silent install patterns. Many Autodesk installers accept /S and /D=<dir>.
           $args = @('/S', "/D=$target")
           Start-Process -FilePath "fbx-sdk.exe" -ArgumentList $args -Wait -NoNewWindow
+          # 树形图输出.\sdk\Windows\2020.3.7目录内容，验证安装成功
+          cmd /c "tree `"$target`" /F"
 
       - name: Configure and Build
         shell: pwsh
