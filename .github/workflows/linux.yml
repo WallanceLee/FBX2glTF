@@ -13,6 +13,16 @@ jobs:
 
       - uses: lukka/get-cmake@latest
 
+      - name: Cache vcpkg installed packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ github.workspace }}/vcpkg_installed
+            ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-
+
       - name: Setup anew (or from cache) vcpkg (and does not build any package)
         uses: lukka/run-vcpkg@v11 # Always specify the specific _version_ of the
 
