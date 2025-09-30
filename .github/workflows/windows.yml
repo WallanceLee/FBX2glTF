@@ -25,4 +25,14 @@ jobs:
 
       - name: Install Autodesk FBX SDK (Silent Mode)
         run: |
-          Start-Process -FilePath "fbx-sdk.exe" -ArgumentList "/S" -Wait -NoNewWindow
+          # Install target under repo relative path: .\sdk\Windows\2020.3.7\
+          $target = Join-Path $PWD 'sdk\Windows\2020.3.7'
+          New-Item -ItemType Directory -Force -Path $target | Out-Null
+          # Try common silent install patterns. Many Autodesk installers accept /S and /D=<dir>.
+          $args = @('/S', "/D=$target")
+          Start-Process -FilePath "fbx-sdk.exe" -ArgumentList $args -Wait -NoNewWindow
+
+      - name: Configure and Build
+        run: |
+          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
+          cmake --build build -j $(nproc)
