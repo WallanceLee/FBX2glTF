@@ -5,7 +5,6 @@
     "glm",
     "libiconv",
     "libxml2",
-    "nlohmann-fifo-map",
     "nlohmann-json",
     "stb",
     "zlib",

@@ -39,7 +39,6 @@ find_package(Threads REQUIRED)
 set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 
 # stuff we get from Conan
-find_package(nlohmann-fifo-map CONFIG REQUIRED)
 find_package(LibXml2 REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(fmt CONFIG REQUIRED)
@@ -145,7 +144,6 @@ target_link_libraries(libFBX2glTF
         fmt::fmt-header-only
         LibXml2::LibXml2
         ZLIB::ZLIB
-        nlohmann-fifo-map::nlohmann-fifo-map
         ${CMAKE_DL_LIBS}
         ${CMAKE_THREAD_LIBS_INIT}
         glm::glm-header-only

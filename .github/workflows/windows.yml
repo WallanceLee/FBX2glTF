@@ -26,8 +26,3 @@ jobs:
       - name: Install Autodesk FBX SDK (Silent Mode)
         run: |
           Start-Process -FilePath "fbx-sdk.exe" -ArgumentList "/S" -Wait -NoNewWindow
-
-      - name: Configure and Build
-        run: |
-          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake -DFBXSDK_SDKS="C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.7"
-          cmake --build build --config Release
