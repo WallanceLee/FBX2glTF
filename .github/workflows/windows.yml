@@ -33,6 +33,24 @@ jobs:
           Start-Process -FilePath "fbx-sdk.exe" -ArgumentList $args -Wait -NoNewWindow
 
       - name: Configure and Build
+        shell: pwsh
         run: |
-          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake
-          cmake --build build -j $(nproc)
+          # Ensure VCPKG_ROOT is set (action that sets up vcpkg should export it)
+          if (-not $env:VCPKG_ROOT) {
+            Write-Error "VCPKG_ROOT is not set in the environment"
+            exit 1
+          }
+
+          $toolchain = Join-Path $env:VCPKG_ROOT "scripts\buildsystems\vcpkg.cmake"
+          $fbxPath = Join-Path $PWD "sdk\Windows\2020.3.7"
+
+          # Configure with explicit toolchain and FBX SDK path
+          cmake -S . -B build `
+            -DCMAKE_TOOLCHAIN_FILE="$toolchain" `
+            -DFBXSDK_SDKS="$fbxPath" `
+            -DCMAKE_BUILD_TYPE=Release
+
+          # Build using CMake's cross-platform parallel option
+          $procs = $env:NUMBER_OF_PROCESSORS
+          if (-not $procs) { $procs = 2 }
+          cmake --build build --config Release --parallel $procs
