@@ -14,7 +14,13 @@
 #if defined(_WIN32)
 // Tell Windows not to define min() and max() macros
 #define NOMINMAX
+// Prevent Windows from defining CopyFile macro
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+// Undefine problematic Windows macros after inclusion
+#ifdef CopyFile
+#undef CopyFile
+#endif
 #endif
 
 #define FBX2GLTF_VERSION std::string("0.9.7")
