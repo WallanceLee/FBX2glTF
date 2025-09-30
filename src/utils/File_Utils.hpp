@@ -14,7 +14,6 @@
 
 #include <filesystem>
 #include <optional>
-using namespace std::literals;
 
 namespace FileUtils {
 

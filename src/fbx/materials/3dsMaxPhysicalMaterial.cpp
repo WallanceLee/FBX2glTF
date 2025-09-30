@@ -6,7 +6,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <fbxsdk/scene/shading/fbxfiletexture.h>
+#include <fmt/printf.h>
+
+#include "FBX2glTF.h"
 #include "RoughnessMetallicMaterials.hpp"
+using namespace fbxsdk;
 
 std::unique_ptr<FbxRoughMetMaterialInfo> Fbx3dsMaxPhysicalMaterialResolver::resolve() const {
   const FbxProperty topProp = fbxMaterial->FindProperty("3dsMax", false);

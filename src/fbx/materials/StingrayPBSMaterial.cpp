@@ -6,7 +6,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <cfloat>
+#include <fbxsdk/core/arch/fbxtypes.h>
+#include <fbxsdk/core/fbxproperty.h>
+#include <fbxsdk/scene/shading/fbxfiletexture.h>
+#include <fmt/printf.h>
+
 #include "RoughnessMetallicMaterials.hpp"
+using namespace fbxsdk;
 
 std::unique_ptr<FbxRoughMetMaterialInfo> FbxStingrayPBSMaterialResolver::resolve() const {
   const FbxProperty mayaProp = fbxMaterial->FindProperty("Maya");

@@ -6,19 +6,19 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// Standard library includes
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <unordered_map>
 #include <vector>
 
+// Third-party library includes
 #include <CLI/CLI.hpp>
 
+// Project includes
 #include "FBX2glTF.h"
 #include "fbx/Fbx2Raw.hpp"
 #include "gltf/Raw2Gltf.hpp"
 #include "utils/File_Utils.hpp"
-#include "utils/String_Utils.hpp"
 
 bool verboseOutput = false;
 

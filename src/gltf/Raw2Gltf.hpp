@@ -17,7 +17,7 @@
 
 #include "FBX2glTF.h"
 #include "raw/RawModel.hpp"
-#include "../mathfu.hpp" // ensure Vec2f/Vec3f/Mat4f/Quatf typedefs are available
+#include "mathfu.hpp" // ensure Vec2f/Vec3f/Mat4f/Quatf typedefs are available
 
 const std::string KHR_DRACO_MESH_COMPRESSION = "KHR_draco_mesh_compression";
 const std::string KHR_MATERIALS_CMN_UNLIT = "KHR_materials_unlit";

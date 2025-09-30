@@ -8,6 +8,12 @@
 
 #pragma once
 
+#include <map>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
+
 #include "gltf/Raw2Gltf.hpp"
 
 struct PrimitiveData {

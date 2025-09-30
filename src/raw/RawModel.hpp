@@ -9,7 +9,6 @@
 #pragma once
 
 #include <functional>
-#include <set>
 #include <unordered_map>
 
 #include "FBX2glTF.h"
