@@ -137,6 +137,21 @@ if (NOT MSVC)
     )
 endif ()
 
+if (MSVC)
+target_link_libraries(libFBX2glTF
+        ${FRAMEWORKS}
+	    draco::draco
+        optimized ${FBXSDK_LIBRARY} ${FBXSDK_LIBXML2_LIBRARY} ${FBXSDK_ZLIB_LIBRARY} ${FBXSDK_ALEMBIC_LIBRARY}
+        debug ${FBXSDK_LIBRARY_DEBUG} ${FBXSDK_LIBXML2_LIBRARY_DEBUG} ${FBXSDK_ZLIB_LIBRARY_DEBUG} ${FBXSDK_ALEMBIC_LIBRARY_DEBUG}
+        fmt::fmt-header-only
+        ${CMAKE_DL_LIBS}
+        ${CMAKE_THREAD_LIBS_INIT}
+        glm::glm-header-only
+        nlohmann_json::nlohmann_json
+        CLI11::CLI11
+        Iconv::Iconv
+)
+else()
 target_link_libraries(libFBX2glTF
         ${FRAMEWORKS}
 	    draco::draco
@@ -152,6 +167,7 @@ target_link_libraries(libFBX2glTF
         CLI11::CLI11
         Iconv::Iconv
 )
+endif()
 
 target_include_directories(libFBX2glTF PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
