@@ -58,8 +58,9 @@ if (APPLE)
     set(FRAMEWORKS ${CF_FRAMEWORK})
 endif ()
 
+set(LIB_HEADERS include/FBX2glTF.h)
+
 set(LIB_SOURCE_FILES
-        src/FBX2glTF.h
         src/fbx/materials/3dsMaxPhysicalMaterial.cpp
         src/fbx/materials/FbxMaterials.cpp
         src/fbx/materials/FbxMaterials.hpp
@@ -172,6 +173,7 @@ endif()
 target_include_directories(libFBX2glTF PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
          ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_include_directories(libFBX2glTF SYSTEM PUBLIC
