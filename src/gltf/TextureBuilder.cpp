@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "TextureBuilder.hpp"
+#include <gltf/TextureBuilder.hpp>
 
 #include <stb_image.h>
 #include <stb_image_write.h>

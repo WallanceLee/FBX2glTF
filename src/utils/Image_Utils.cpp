@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "Image_Utils.hpp"
+#include <utils/Image_Utils.hpp>
 
 #include <algorithm>
 #include <string>

@@ -9,8 +9,8 @@
 #include <fbxsdk/scene/shading/fbxfiletexture.h>
 #include <fmt/printf.h>
 
-#include "FBX2glTF.h"
-#include "RoughnessMetallicMaterials.hpp"
+#include <FBX2glTF.h>
+#include <fbx/materials/RoughnessMetallicMaterials.hpp>
 using namespace fbxsdk;
 
 std::unique_ptr<FbxRoughMetMaterialInfo> Fbx3dsMaxPhysicalMaterialResolver::resolve() const {

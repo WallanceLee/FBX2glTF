@@ -8,9 +8,9 @@
 
 #include "fbx/Fbx2Raw.hpp"
 
-#include "FbxMaterials.hpp"
-#include "RoughnessMetallicMaterials.hpp"
-#include "TraditionalMaterials.hpp"
+#include <fbx/materials/FbxMaterials.hpp>
+#include <fbx/materials/RoughnessMetallicMaterials.hpp>
+#include <fbx/materials/TraditionalMaterials.hpp>
 
 static int warnMtrCount = 0;
 

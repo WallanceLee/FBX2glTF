@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "FbxSkinningAccess.hpp"
+#include <fbx/FbxSkinningAccess.hpp>
 
 FbxSkinningAccess::FbxSkinningAccess(const FbxMesh* pMesh, FbxScene* pScene, FbxNode* pNode)
     : rootIndex(-1) {

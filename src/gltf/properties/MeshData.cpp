@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "MeshData.hpp"
-#include "PrimitiveData.hpp"
+#include <gltf/properties/MeshData.hpp>
+#include <gltf/properties/PrimitiveData.hpp>
 
 MeshData::MeshData(const std::string& name, const std::vector<float>& weights)
     : Holdable(), name(name), weights(weights) {}

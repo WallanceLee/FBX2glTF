@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "MaterialData.hpp"
-#include "TextureData.hpp"
+#include <gltf/properties/MaterialData.hpp>
+#include <gltf/properties/TextureData.hpp>
 
 #include <glm/glm.hpp> // added: use glm::clamp and glm::dot
 

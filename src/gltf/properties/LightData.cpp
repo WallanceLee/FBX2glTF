@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "LightData.hpp"
+#include <gltf/properties/LightData.hpp>
 #include <cmath>
 
 // Define M_PI_4 for MSVC compatibility

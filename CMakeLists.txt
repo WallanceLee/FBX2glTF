@@ -58,66 +58,41 @@ if (APPLE)
     set(FRAMEWORKS ${CF_FRAMEWORK})
 endif ()
 
-set(LIB_HEADERS include/FBX2glTF.h)
+file(GLOB_RECURSE HEADER_FILES
+        include/*.h
+        include/*.hpp
+)
+
+set(LIB_HEADERS ${HEADER_FILES})
 
 set(LIB_SOURCE_FILES
         src/fbx/materials/3dsMaxPhysicalMaterial.cpp
         src/fbx/materials/FbxMaterials.cpp
-        src/fbx/materials/FbxMaterials.hpp
-        src/fbx/materials/RoughnessMetallicMaterials.hpp
         src/fbx/materials/StingrayPBSMaterial.cpp
         src/fbx/materials/TraditionalMaterials.cpp
-        src/fbx/materials/TraditionalMaterials.hpp
         src/fbx/Fbx2Raw.cpp
-        src/fbx/Fbx2Raw.hpp
         src/fbx/FbxBlendShapesAccess.cpp
-        src/fbx/FbxBlendShapesAccess.hpp
-        src/fbx/FbxLayerElementAccess.hpp
         src/fbx/FbxSkinningAccess.cpp
-        src/fbx/FbxSkinningAccess.hpp
         src/gltf/Raw2Gltf.cpp
-        src/gltf/Raw2Gltf.hpp
         src/gltf/GltfModel.cpp
-        src/gltf/GltfModel.hpp
         src/gltf/TextureBuilder.cpp
-        src/gltf/TextureBuilder.hpp
         src/gltf/properties/AccessorData.cpp
-        src/gltf/properties/AccessorData.hpp
         src/gltf/properties/AnimationData.cpp
-        src/gltf/properties/AnimationData.hpp
         src/gltf/properties/BufferData.cpp
-        src/gltf/properties/BufferData.hpp
         src/gltf/properties/BufferViewData.cpp
-        src/gltf/properties/BufferViewData.hpp
         src/gltf/properties/CameraData.cpp
-        src/gltf/properties/CameraData.hpp
         src/gltf/properties/ImageData.cpp
-        src/gltf/properties/ImageData.hpp
         src/gltf/properties/LightData.cpp
-        src/gltf/properties/LightData.hpp
         src/gltf/properties/MaterialData.cpp
-        src/gltf/properties/MaterialData.hpp
         src/gltf/properties/MeshData.cpp
-        src/gltf/properties/MeshData.hpp
         src/gltf/properties/NodeData.cpp
-        src/gltf/properties/NodeData.hpp
         src/gltf/properties/PrimitiveData.cpp
-        src/gltf/properties/PrimitiveData.hpp
-        src/gltf/properties/SamplerData.hpp
         src/gltf/properties/SceneData.cpp
-        src/gltf/properties/SceneData.hpp
         src/gltf/properties/SkinData.cpp
-        src/gltf/properties/SkinData.hpp
         src/gltf/properties/TextureData.cpp
-        src/gltf/properties/TextureData.hpp
-        src/mathfu.hpp
         src/raw/RawModel.cpp
-        src/raw/RawModel.hpp
         src/utils/File_Utils.cpp
-        src/utils/File_Utils.hpp
         src/utils/Image_Utils.cpp
-        src/utils/Image_Utils.hpp
-        src/utils/String_Utils.hpp
 )
 
 add_library(libFBX2glTF STATIC ${LIB_SOURCE_FILES})

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "TraditionalMaterials.hpp"
+#include <fbx/materials/TraditionalMaterials.hpp>
 #include <fbxsdk/scene/shading/fbxfiletexture.h>
 #include <fmt/printf.h>
 using namespace fbxsdk;

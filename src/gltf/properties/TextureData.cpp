@@ -6,10 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "TextureData.hpp"
+#include <gltf/properties/TextureData.hpp>
 
-#include "ImageData.hpp"
-#include "SamplerData.hpp"
+#include <gltf/properties/ImageData.hpp>
+#include <gltf/properties/SamplerData.hpp>
 
 TextureData::TextureData(std::string name, const SamplerData& sampler, const ImageData& source)
     : Holdable(), name(std::move(name)), sampler(sampler.ix), source(source.ix) {}

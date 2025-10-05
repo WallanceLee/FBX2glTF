@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "NodeData.hpp"
+#include <gltf/properties/NodeData.hpp>
 
 NodeData::NodeData(
     std::string name,

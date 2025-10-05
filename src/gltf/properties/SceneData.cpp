@@ -6,9 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "SceneData.hpp"
+#include <gltf/properties/SceneData.hpp>
 
-#include "NodeData.hpp"
+#include <gltf/properties/NodeData.hpp>
 
 SceneData::SceneData(std::string name, const NodeData& rootNode)
     : Holdable(), name(std::move(name)), nodes({rootNode.ix}) {}

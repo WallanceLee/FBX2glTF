@@ -6,11 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "PrimitiveData.hpp"
+#include <gltf/properties/PrimitiveData.hpp>
 
-#include "AccessorData.hpp"
-#include "BufferViewData.hpp"
-#include "MaterialData.hpp"
+#include <gltf/properties/AccessorData.hpp>
+#include <gltf/properties/BufferViewData.hpp>
+#include <gltf/properties/MaterialData.hpp>
 
 PrimitiveData::PrimitiveData(
     const AccessorData& indices,

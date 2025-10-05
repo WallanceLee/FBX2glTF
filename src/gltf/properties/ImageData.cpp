@@ -6,11 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "ImageData.hpp"
+#include <gltf/properties/ImageData.hpp>
 
 #include <utility>
 
-#include "BufferViewData.hpp"
+#include <gltf/properties/BufferViewData.hpp>
 
 ImageData::ImageData(std::string name, std::string uri)
     : Holdable(), name(std::move(name)), uri(std::move(uri)), bufferView(-1) {}

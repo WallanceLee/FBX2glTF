@@ -6,12 +6,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "AnimationData.hpp"
+#include <gltf/properties/AnimationData.hpp>
 
 #include <utility>
 
-#include "AccessorData.hpp"
-#include "NodeData.hpp"
+#include <gltf/properties/AccessorData.hpp>
+#include <gltf/properties/NodeData.hpp>
 
 AnimationData::AnimationData(std::string name, const AccessorData& timeAccessor)
     : Holdable(), name(std::move(name)), timeAccessor(timeAccessor.ix) {}

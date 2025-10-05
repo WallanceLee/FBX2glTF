@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "AccessorData.hpp"
-#include "BufferViewData.hpp"
+#include <gltf/properties/AccessorData.hpp>
+#include <gltf/properties/BufferViewData.hpp>
 
 AccessorData::AccessorData(const BufferViewData& bufferView, GLType type, std::string name)
     : Holdable(),

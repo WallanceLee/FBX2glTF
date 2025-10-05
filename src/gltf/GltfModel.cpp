@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "GltfModel.hpp"
+#include <gltf/GltfModel.hpp>
 
 std::shared_ptr<BufferViewData> GltfModel::GetAlignedBufferView(
     BufferData& buffer,

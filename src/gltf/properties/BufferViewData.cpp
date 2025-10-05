@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "BufferViewData.hpp"
-#include "BufferData.hpp"
+#include <gltf/properties/BufferViewData.hpp>
+#include <gltf/properties/BufferData.hpp>
 
 BufferViewData::BufferViewData(
     const BufferData& _buffer,

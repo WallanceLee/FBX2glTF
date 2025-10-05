@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "Raw2Gltf.hpp"
+#include <fbx/Fbx2Raw.hpp>
 
 #include <cassert>
 #include <cstdint>
@@ -25,21 +25,21 @@
 
 #include "raw/RawModel.hpp"
 
-#include "gltf/properties/AccessorData.hpp"
-#include "gltf/properties/AnimationData.hpp"
-#include "gltf/properties/BufferData.hpp"
-#include "gltf/properties/BufferViewData.hpp"
-#include "gltf/properties/CameraData.hpp"
-#include "gltf/properties/MaterialData.hpp"
-#include "gltf/properties/MeshData.hpp"
-#include "gltf/properties/NodeData.hpp"
-#include "gltf/properties/PrimitiveData.hpp"
-#include "gltf/properties/SceneData.hpp"
-#include "gltf/properties/SkinData.hpp"
-#include "gltf/properties/TextureData.hpp"
+#include <gltf/properties/AccessorData.hpp>
+#include <gltf/properties/AnimationData.hpp>
+#include <gltf/properties/BufferData.hpp>
+#include <gltf/properties/BufferViewData.hpp>
+#include <gltf/properties/CameraData.hpp>
+#include <gltf/properties/MaterialData.hpp>
+#include <gltf/properties/MeshData.hpp>
+#include <gltf/properties/NodeData.hpp>
+#include <gltf/properties/PrimitiveData.hpp>
+#include <gltf/properties/SceneData.hpp>
+#include <gltf/properties/SkinData.hpp>
+#include <gltf/properties/TextureData.hpp>
 
-#include "GltfModel.hpp"
-#include "TextureBuilder.hpp"
+#include <gltf/GltfModel.hpp>
+#include <gltf/TextureBuilder.hpp>
 
 typedef uint32_t TriangleIndex;
 

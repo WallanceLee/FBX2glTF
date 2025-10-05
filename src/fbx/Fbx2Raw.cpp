@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "Fbx2Raw.hpp"
+#include <fbx/Fbx2Raw.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -18,15 +18,15 @@
 
 #include "FBX2glTF.h"
 
-#include "raw/RawModel.hpp"
-#include "utils/File_Utils.hpp"
-#include "utils/String_Utils.hpp"
+#include <raw/RawModel.hpp>
+#include <utils/File_Utils.hpp>
+#include <utils/String_Utils.hpp>
 
-#include "FbxBlendShapesAccess.hpp"
-#include "FbxLayerElementAccess.hpp"
-#include "FbxSkinningAccess.hpp"
-#include "materials/RoughnessMetallicMaterials.hpp"
-#include "materials/TraditionalMaterials.hpp"
+#include <fbx/FbxBlendShapesAccess.hpp>
+#include <fbx/FbxLayerElementAccess.hpp>
+#include <fbx/FbxSkinningAccess.hpp>
+#include <fbx/materials/RoughnessMetallicMaterials.hpp>
+#include <fbx/materials/TraditionalMaterials.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

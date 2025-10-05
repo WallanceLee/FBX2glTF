@@ -9,7 +9,7 @@
  #include <tobiaslocker/base64.hpp>
  #include <string>
 
-#include "BufferData.hpp"
+#include <gltf/properties/BufferData.hpp>
 
 BufferData::BufferData(const std::shared_ptr<const std::vector<uint8_t>>& binData)
     : Holdable(), isGlb(true), binData(binData) {}

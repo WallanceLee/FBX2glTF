@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "RawModel.hpp"
+#include <raw/RawModel.hpp>
 
 #include <cmath>
 #include <set>

@@ -6,10 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "SkinData.hpp"
+#include <gltf/properties/SkinData.hpp>
 
-#include "AccessorData.hpp"
-#include "NodeData.hpp"
+#include <gltf/properties/AccessorData.hpp>
+#include <gltf/properties/NodeData.hpp>
 
 SkinData::SkinData(
     const std::vector<uint32_t> joints,

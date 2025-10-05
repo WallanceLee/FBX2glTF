@@ -6,8 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "File_Utils.hpp"
-#include "String_Utils.hpp"
+#include <utils/File_Utils.hpp>
+#include <utils/String_Utils.hpp>
 
 #include <fstream>
 #include <set>
@@ -16,8 +16,6 @@
 
 #include <fmt/printf.h>
 #include <stdio.h>
-
-#include "String_Utils.hpp"
 
 std::vector<std::string> FileUtils::ListFolderFiles(
     std::string folder,

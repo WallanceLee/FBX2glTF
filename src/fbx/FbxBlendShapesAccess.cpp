@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "FbxBlendShapesAccess.hpp"
+#include <fbx/FbxBlendShapesAccess.hpp>
 
 FbxBlendShapesAccess::TargetShape::TargetShape(const FbxShape* shape, FbxDouble fullWeight)
     : shape(shape),
