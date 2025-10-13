@@ -16,6 +16,9 @@
 
 // Project includes
 #include "FBX2glTF.h"
+
+#include "exporters/ExporterBase.hpp"
+#include "exporters/GLTFExporter.h"
 #include "fbx/Fbx2Raw.hpp"
 #include "gltf/Raw2Gltf.hpp"
 #include "utils/File_Utils.hpp"
@@ -331,75 +334,10 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  ModelData* data_render_model = nullptr;
-  RawModel raw;
+  std::unique_ptr<ExporterBase> exporterPtr;
+  if (gltfOptions.format == OutputFormat::glTF) {
+    exporterPtr = std::make_unique<GLTFExporter>(inputPath, outputFolder, gltfOptions);
+  } else if (gltfOptions.format == OutputFormat::Tileset) {}
 
-  if (verboseOutput) {
-    fmt::printf("Loading FBX File: %s\n", inputPath);
-  }
-  if (!LoadFBXFile(raw, inputPath, {"png", "jpg", "jpeg"}, gltfOptions)) {
-    fmt::fprintf(stderr, "ERROR:: Failed to parse FBX: %s\n", inputPath);
-    return 1;
-  }
-
-  if (!texturesTransforms.empty()) {
-    raw.TransformTextures(texturesTransforms);
-  }
-  raw.Condense();
-  raw.TransformGeometry(gltfOptions.computeNormals);
-
-  std::ofstream outStream; // note: auto-flushes in destructor
-  const auto streamStart = outStream.tellp();
-
-  outStream.open(modelPath, std::ios::trunc | std::ios::ate | std::ios::out | std::ios::binary);
-  if (outStream.fail()) {
-    fmt::fprintf(stderr, "ERROR:: Couldn't open file for writing: %s\n", modelPath.c_str());
-    return 1;
-  }
-  data_render_model = Raw2Gltf(outStream, outputFolder, raw, gltfOptions);
-
-  if (gltfOptions.outputBinary) {
-    fmt::printf(
-        "Wrote %lu bytes of binary glTF to %s.\n",
-        (unsigned long)(outStream.tellp() - streamStart),
-        modelPath);
-    delete data_render_model;
-    return 0;
-  }
-
-  fmt::printf(
-      "Wrote %lu bytes of glTF to %s.\n",
-      (unsigned long)(outStream.tellp() - streamStart),
-      modelPath);
-
-  if (gltfOptions.embedResources) {
-    // we're done: everything was inlined into the glTF JSON
-    delete data_render_model;
-    return 0;
-  }
-
-  assert(!outputFolder.empty());
-
-  const std::string binaryPath = outputFolder + extBufferFilename;
-  FILE* fp = fopen(binaryPath.c_str(), "wb");
-  if (fp == nullptr) {
-    fmt::fprintf(stderr, "ERROR:: Couldn't open file '%s' for writing.\n", binaryPath);
-    return 1;
-  }
-
-  if (data_render_model->binary->empty() == false) {
-    const unsigned char* binaryData = &(*data_render_model->binary)[0];
-    unsigned long binarySize = data_render_model->binary->size();
-    if (fwrite(binaryData, binarySize, 1, fp) != 1) {
-      fmt::fprintf(
-          stderr, "ERROR: Failed to write %lu bytes to file '%s'.\n", binarySize, binaryPath);
-      fclose(fp);
-      return 1;
-    }
-    fclose(fp);
-    fmt::printf("Wrote %lu bytes of binary data to %s.\n", binarySize, binaryPath);
-  }
-
-  delete data_render_model;
-  return 0;
+  exporterPtr->Export(modelPath, texturesTransforms);
 }
