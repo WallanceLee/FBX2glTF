@@ -80,6 +80,10 @@ enum class AnimationFramerateOptions {
   BAKE60, // bake animations at 60 fps
 };
 
+enum class OutputFormat {
+  glTF, Tileset
+};
+
 /**
  * User-supplied options that dictate the nature of the glTF being generated.
  */
@@ -131,4 +135,7 @@ struct GltfOptions {
 
   /** Temporary directory used by FBX SDK. */
   std::string fbxTempDir;
+
+  /** Format for output, glTF or tileset(3dtiles) */
+  OutputFormat format;
 };

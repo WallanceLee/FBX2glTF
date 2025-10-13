@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
   });
 
   std::string inputPath;
-  app.add_option("FBX Model", inputPath, "The FBX model to convert.")->check(CLI::ExistingFile);
+  // app.add_option("FBX Model", inputPath, "The FBX model to convert.")->check(CLI::ExistingFile);
   app.add_option("-i,--input", inputPath, "The FBX model to convert.")->check(CLI::ExistingFile);
 
   std::string outputPath;
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
          "--draco-bits-for-position",
          gltfOptions.draco.quantBitsPosition,
          "How many bits to quantize position to.")
-         ->capture_default_str()
+      ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
          "--draco-bits-for-uv",
          gltfOptions.draco.quantBitsTexCoord,
          "How many bits to quantize UV coordinates to.")
-         ->capture_default_str()
+      ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
          "--draco-bits-for-normals",
          gltfOptions.draco.quantBitsNormal,
          "How many bits to quantize nornals to.")
-         ->capture_default_str()
+      ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
@@ -225,7 +225,7 @@ int main(int argc, char* argv[]) {
          "--draco-bits-for-colors",
          gltfOptions.draco.quantBitsColor,
          "How many bits to quantize colors to.")
-         ->capture_default_str()
+      ->capture_default_str()
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
@@ -237,7 +237,18 @@ int main(int argc, char* argv[]) {
       ->check(CLI::Range(1, 32))
       ->group("Draco");
 
-  app.add_option("--fbx-temp-dir", gltfOptions.fbxTempDir, "Temporary directory to be used by FBX SDK.")->check(CLI::ExistingDirectory);
+  app.add_option(
+         "--fbx-temp-dir", gltfOptions.fbxTempDir, "Temporary directory to be used by FBX SDK.")
+      ->check(CLI::ExistingDirectory);
+
+  app.add_option("--format", gltfOptions.format, "Output format")
+      ->transform(
+          CLI::CheckedTransformer(
+              std::map<std::string, OutputFormat>{
+                  {"glTF", OutputFormat::glTF},
+                  {"Tileset", OutputFormat::Tileset},
+              },
+              CLI::ignore_case));
 
   CLI11_PARSE(app, argc, argv);
 
