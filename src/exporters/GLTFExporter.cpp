@@ -9,7 +9,7 @@
 bool GLTFExporter::Export(
     const std::string& outputPath,
     std::vector<std::function<Vec2f(Vec2f)>>& texturesTransforms) {
-  ModelData* data_render_model = nullptr;
+
   RawModel raw;
 
   if (verboseOutput) {
@@ -32,17 +32,16 @@ bool GLTFExporter::Export(
   outStream.open(outputPath, std::ios::trunc | std::ios::ate | std::ios::out | std::ios::binary);
   if (outStream.fail()) {
     fmt::fprintf(stderr, "ERROR:: Couldn't open file for writing: %s\n", outputPath.c_str());
-    return 1;
+    return false;
   }
-  data_render_model = Raw2Gltf(outStream, OutputFolder(), raw, GLTFOptions());
+  std::unique_ptr<ModelData> data_render_model(Raw2Gltf(outStream, OutputFolder(), raw, GLTFOptions()));
 
   if (GLTFOptions().outputBinary) {
     fmt::printf(
         "Wrote %lu bytes of binary glTF to %s.\n",
         (unsigned long)(outStream.tellp() - streamStart),
         outputPath);
-    delete data_render_model;
-    return 0;
+    return true;
   }
 
   fmt::printf(
@@ -52,8 +51,7 @@ bool GLTFExporter::Export(
 
   if (GLTFOptions().embedResources) {
     // we're done: everything was inlined into the glTF JSON
-    delete data_render_model;
-    return 0;
+    return true;
   }
 
   assert(!OutputFolder().empty());
@@ -78,6 +76,5 @@ bool GLTFExporter::Export(
     fmt::printf("Wrote %lu bytes of binary data to %s.\n", binarySize, binaryPath);
   }
 
-  delete data_render_model;
   return true;
 }
