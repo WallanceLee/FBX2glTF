@@ -8,3 +8,4 @@ npm/tests/test/*.js.map
 /build/
 /sdk/
 /.cache/
+/.idea/
