@@ -4,5 +4,7 @@
 class ExporterBase {
  public:
   virtual ~ExporterBase() = default;
-  virtual bool Export(const std::string& outputPath, std::vector<std::function<Vec2f(Vec2f)>> &texturesTransforms) = 0;
+  virtual bool Export(
+      const std::string& outputPath,
+      std::vector<std::function<Vec2f(Vec2f)>>& texturesTransforms) = 0;
 };

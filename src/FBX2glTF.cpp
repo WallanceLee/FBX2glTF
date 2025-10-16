@@ -7,8 +7,6 @@
  */
 
 // Standard library includes
-#include <fstream>
-#include <iostream>
 #include <vector>
 
 // Third-party library includes
@@ -19,8 +17,6 @@
 
 #include "exporters/ExporterBase.hpp"
 #include "exporters/GLTFExporter.h"
-#include "fbx/Fbx2Raw.hpp"
-#include "gltf/Raw2Gltf.hpp"
 #include "utils/File_Utils.hpp"
 
 bool verboseOutput = false;
@@ -337,7 +333,8 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<ExporterBase> exporterPtr;
   if (gltfOptions.format == OutputFormat::glTF) {
     exporterPtr = std::make_unique<GLTFExporter>(inputPath, outputFolder, gltfOptions);
-  } else if (gltfOptions.format == OutputFormat::Tileset) {}
+  } else if (gltfOptions.format == OutputFormat::Tileset) {
+  }
 
   exporterPtr->Export(modelPath, texturesTransforms);
 }
