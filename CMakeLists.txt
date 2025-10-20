@@ -6,8 +6,8 @@ if (LINUX)
     set(CMAKE_C_COMPILER gcc)
     set(CMAKE_CXX_COMPILER g++)
 elseif(APPLE)
-    set(CMAKE_C_COMPILER clang)
-    set(CMAKE_CXX_COMPILER clang++)
+    set(CMAKE_C_COMPILER /usr/bin/clang)
+    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 elseif(WIN32)
     set(CMAKE_C_COMPILER cl)
     set(CMAKE_CXX_COMPILER cl)
@@ -99,7 +99,6 @@ add_library(libFBX2glTF STATIC ${LIB_SOURCE_FILES})
 set_target_properties(libFBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
 add_executable(appFBX2glTF src/FBX2glTF.cpp)
 set_target_properties(appFBX2glTF PROPERTIES OUTPUT_NAME "FBX2glTF")
-
 
 if (NOT MSVC)
     # Disable annoying & spammy warning from FBX SDK header file
