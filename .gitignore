@@ -9,3 +9,6 @@ npm/tests/test/*.js.map
 /sdk/
 /.cache/
 /.idea/
+/vcpkg_installed/
+/CMakeFiles/
+/cmake-build-debug/
