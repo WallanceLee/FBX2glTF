@@ -11,6 +11,9 @@
 #include <memory>
 #include <string>
 
+// Forward declaration to break circular dependency
+class GltfModel;
+
 // This can be a macro under Windows, confusing Draco
 #undef ERROR
 #include <draco/compression/encode.h>
@@ -253,6 +256,18 @@ struct ModelData {
 
   std::shared_ptr<const std::vector<uint8_t>> const binary;
 };
+
+std::shared_ptr<SceneData>  PrepareGltfModel(
+    const std::string& outputFolder,
+    const RawModel& raw,
+    const GltfOptions& options,
+    GltfModel& gltf);
+
+void WriteGLTF(
+    std::ofstream& gltfOutStream,
+    const GltfOptions& options,
+    std::unique_ptr<GltfModel>& gltf,
+    const SceneData& rootScene);
 
 ModelData* Raw2Gltf(
     std::ofstream& gltfOutStream,

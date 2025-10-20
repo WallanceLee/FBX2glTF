@@ -6,12 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include "gltf/Raw2Gltf.hpp"
 #include <fbx/Fbx2Raw.hpp>
 
 #include <cassert>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <memory>
+#include "mathfu.hpp"
 
 // Define M_PI for MSVC compatibility
 #ifndef M_PI
@@ -41,9 +44,9 @@
 #include <gltf/GltfModel.hpp>
 #include <gltf/TextureBuilder.hpp>
 
-typedef uint32_t TriangleIndex;
+using TriangleIndex = uint32_t;
 
-#define DEFAULT_SCENE_NAME "Root Scene"
+constexpr const char* DEFAULT_SCENE_NAME = "Root Scene";
 
 /**
  * This method sanity-checks existance and then returns a *reference* to the *Data instance
@@ -77,11 +80,135 @@ static const std::vector<TriangleIndex> getIndexArray(const RawModel& raw) {
   return result;
 }
 
-ModelData* Raw2Gltf(
+void WriteGLTF(
     std::ofstream& gltfOutStream,
+    const GltfOptions& options,
+    std::unique_ptr<GltfModel>& gltf,
+    const SceneData& rootScene) {
+  if (options.outputBinary) {
+    // note: glTF binary is little-endian
+    const char glbHeader[] = {
+        'g',
+        'l',
+        'T',
+        'F', // magic
+        0x02,
+        0x00,
+        0x00,
+        0x00, // version
+        0x00,
+        0x00,
+        0x00,
+        0x00, // total length: written in later
+    };
+    gltfOutStream.write(glbHeader, 12);
+
+    // binary glTF 2.0 has a sub-header for each of the JSON and BIN chunks
+    const char glb2JsonHeader[] = {
+        0x00,
+        0x00,
+        0x00,
+        0x00, // chunk length: written in later
+        'J',
+        'S',
+        'O',
+        'N', // chunk type: 0x4E4F534A aka JSON
+    };
+    gltfOutStream.write(glb2JsonHeader, 8);
+  }
+
+  {
+    std::vector<std::string> extensionsUsed, extensionsRequired;
+    if (options.useKHRMatUnlit) {
+      extensionsUsed.push_back(KHR_MATERIALS_CMN_UNLIT);
+    }
+    if (!gltf->lights.ptrs.empty()) {
+      extensionsUsed.push_back(KHR_LIGHTS_PUNCTUAL);
+    }
+    if (options.draco.enabled) {
+      extensionsUsed.push_back(KHR_DRACO_MESH_COMPRESSION);
+      extensionsRequired.push_back(KHR_DRACO_MESH_COMPRESSION);
+    }
+
+    json glTFJson{
+        {"asset", {{"generator", "FBX2glTF v" + FBX2GLTF_VERSION}, {"version", "2.0"}}},
+        {"scene", rootScene.ix}};
+    if (!extensionsUsed.empty()) {
+      glTFJson["extensionsUsed"] = extensionsUsed;
+    }
+    if (!extensionsRequired.empty()) {
+      glTFJson["extensionsRequired"] = extensionsRequired;
+    }
+
+    gltf->serializeHolders(glTFJson);
+
+    gltfOutStream << glTFJson.dump(options.outputBinary ? 0 : 4);
+  }
+  if (options.outputBinary) {
+    uint32_t jsonLength = (uint32_t)gltfOutStream.tellp() - 20;
+    // the binary body must begin on a 4-aligned address, so pad json with spaces if necessary
+    while ((jsonLength % 4) != 0) {
+      gltfOutStream.put(' ');
+      jsonLength++;
+    }
+
+    uint32_t binHeader = (uint32_t)gltfOutStream.tellp();
+    // binary glTF 2.0 has a sub-header for each of the JSON and BIN chunks
+    const char glb2BinaryHeader[] = {
+        0x00,
+        0x00,
+        0x00,
+        0x00, // chunk length: written in later
+        'B',
+        'I',
+        'N',
+        0x00, // chunk type: 0x004E4942 aka BIN
+    };
+    gltfOutStream.write(glb2BinaryHeader, 8);
+
+    // append binary buffer directly to .glb file
+    size_t binaryLength = gltf->binary->size();
+    gltfOutStream.write((const char*)&(*gltf->binary)[0], binaryLength);
+    while ((binaryLength % 4) != 0) {
+      gltfOutStream.put('\0');
+      binaryLength++;
+    }
+    uint32_t totalLength = to_uint32(gltfOutStream.tellp());
+
+    // seek back to sub-header for json chunk
+    gltfOutStream.seekp(8);
+
+    // write total length, little-endian
+    gltfOutStream.put((totalLength >> 0) & 0xFF);
+    gltfOutStream.put((totalLength >> 8) & 0xFF);
+    gltfOutStream.put((totalLength >> 16) & 0xFF);
+    gltfOutStream.put((totalLength >> 24) & 0xFF);
+
+    // write JSON length, little-endian
+    gltfOutStream.put((jsonLength >> 0) & 0xFF);
+    gltfOutStream.put((jsonLength >> 8) & 0xFF);
+    gltfOutStream.put((jsonLength >> 16) & 0xFF);
+    gltfOutStream.put((jsonLength >> 24) & 0xFF);
+
+    // seek back to the gltf 2.0 binary chunk header
+    gltfOutStream.seekp(binHeader);
+
+    // write total length, little-endian
+    gltfOutStream.put((binaryLength >> 0) & 0xFF);
+    gltfOutStream.put((binaryLength >> 8) & 0xFF);
+    gltfOutStream.put((binaryLength >> 16) & 0xFF);
+    gltfOutStream.put((binaryLength >> 24) & 0xFF);
+
+    // be tidy and return write pointer to end-of-file
+    gltfOutStream.seekp(0, std::ios::end);
+  }
+}
+
+std::shared_ptr<SceneData>  PrepareGltfModel(
     const std::string& outputFolder,
     const RawModel& raw,
-    const GltfOptions& options) {
+    const GltfOptions& options,
+    GltfModel& gltf) {
   if (verboseOutput) {
     fmt::printf("Building render model...\n");
     for (int i = 0; i < raw.GetMaterialCount(); i++) {
@@ -115,7 +242,7 @@ ModelData* Raw2Gltf(
     fmt::printf("%7d lights\n", raw.GetLightCount());
   }
 
-  std::unique_ptr<GltfModel> gltf(new GltfModel(options));
+
 
   std::map<long, std::shared_ptr<NodeData>> nodesById;
   std::map<long, std::shared_ptr<MaterialData>> materialsById;
@@ -124,7 +251,7 @@ ModelData* Raw2Gltf(
 
   // for now, we only have one buffer; data->binary points to the same vector as that BufferData
   // does.
-  BufferData& buffer = *gltf->defaultBuffer;
+  BufferData& buffer = *(gltf.defaultBuffer);
   {
     //
     // nodes
@@ -134,7 +261,7 @@ ModelData* Raw2Gltf(
       // assumption: RawNode index == NodeData index
       const RawNode& node = raw.GetNode(i);
 
-      auto nodeData = gltf->nodes.hold(
+      auto nodeData = gltf.nodes.hold(
           new NodeData(node.name, node.translation, node.rotation, node.scale, node.isJoint));
 
       if (options.enableUserProperties) {
@@ -163,11 +290,11 @@ ModelData* Raw2Gltf(
         continue;
       }
 
-      auto accessor = gltf->AddAccessorAndView(buffer, GLT_FLOAT, animation.times);
+      auto accessor = gltf.AddAccessorAndView(buffer, GLT_FLOAT, animation.times);
       accessor->min = {*std::min_element(std::begin(animation.times), std::end(animation.times))};
       accessor->max = {*std::max_element(std::begin(animation.times), std::end(animation.times))};
 
-      AnimationData& aDat = *gltf->animations.hold(new AnimationData(animation.name, *accessor));
+      AnimationData& aDat = *gltf.animations.hold(new AnimationData(animation.name, *accessor));
       if (verboseOutput) {
         fmt::printf(
             "Animation '%s' has %lu channels:\n",
@@ -194,21 +321,21 @@ ModelData* Raw2Gltf(
         if (!channel.translations.empty()) {
           aDat.AddNodeChannel(
               nDat,
-              *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.translations),
+              *gltf.AddAccessorAndView(buffer, GLT_VEC3F, channel.translations),
               "translation");
         }
         if (!channel.rotations.empty()) {
           aDat.AddNodeChannel(
-              nDat, *gltf->AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
+              nDat, *gltf.AddAccessorAndView(buffer, GLT_QUATF, channel.rotations), "rotation");
         }
         if (!channel.scales.empty()) {
           aDat.AddNodeChannel(
-              nDat, *gltf->AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
+              nDat, *gltf.AddAccessorAndView(buffer, GLT_VEC3F, channel.scales), "scale");
         }
         if (!channel.weights.empty()) {
           aDat.AddNodeChannel(
               nDat,
-              *gltf->AddAccessorAndView(buffer, {CT_FLOAT, 1, "SCALAR"}, channel.weights),
+              *gltf.AddAccessorAndView(buffer, {CT_FLOAT, 1, "SCALAR"}, channel.weights),
               "weights");
         }
       }
@@ -221,7 +348,7 @@ ModelData* Raw2Gltf(
     // textures
     //
 
-    TextureBuilder textureBuilder(raw, options, outputFolder, *gltf);
+    TextureBuilder textureBuilder(raw, options, outputFolder, gltf);
 
     //
     // materials
@@ -291,10 +418,11 @@ ModelData* Raw2Gltf(
                   const float metallic = (*pixels[1])[0] * (hasMetallicMap ? 1 : props->metallic);
                   const float roughness =
                       (*pixels[2])[0] * (hasRoughnessMap ? 1 : props->roughness);
-                  return {{occlusion,
-                           props->invertRoughnessMap ? 1.0f - roughness : roughness,
-                           metallic,
-                           1}};
+                  return {
+                      {occlusion,
+                       props->invertRoughnessMap ? 1.0f - roughness : roughness,
+                       metallic,
+                       1}};
                 },
                 false);
           }
@@ -393,7 +521,7 @@ ModelData* Raw2Gltf(
         occlusionTexture = simpleTex(RAW_TEXTURE_USAGE_OCCLUSION).get();
       }
 
-      std::shared_ptr<MaterialData> mData = gltf->materials.hold(new MaterialData(
+      std::shared_ptr<MaterialData> mData = gltf.materials.hold(new MaterialData(
           material.name,
           isTransparent,
           material.info->shadingModel,
@@ -429,7 +557,7 @@ ModelData* Raw2Gltf(
         for (const auto& channel : rawSurface.blendChannels) {
           defaultDeforms.push_back(channel.defaultDeform);
         }
-        auto meshPtr = gltf->meshes.hold(new MeshData(rawSurface.name, defaultDeforms));
+        auto meshPtr = gltf.meshes.hold(new MeshData(rawSurface.name, defaultDeforms));
         meshBySurfaceId[surfaceId] = meshPtr;
         mesh = meshPtr.get();
       }
@@ -456,12 +584,12 @@ ModelData* Raw2Gltf(
         }
 
         AccessorData& indexes =
-            *gltf->accessors.hold(new AccessorData(useLongIndices ? GLT_UINT : GLT_USHORT));
+            *gltf.accessors.hold(new AccessorData(useLongIndices ? GLT_UINT : GLT_USHORT));
         indexes.count = to_uint32(3 * triangleCount);
         primitive.reset(new PrimitiveData(indexes, mData, dracoMesh));
       } else {
-        const AccessorData& indexes = *gltf->AddAccessorWithView(
-            *gltf->GetAlignedBufferView(buffer, BufferViewData::GL_ELEMENT_ARRAY_BUFFER),
+        const AccessorData& indexes = *gltf.AddAccessorWithView(
+            *gltf.GetAlignedBufferView(buffer, BufferViewData::GL_ELEMENT_ARRAY_BUFFER),
             useLongIndices ? GLT_UINT : GLT_USHORT,
             getIndexArray(surfaceModel),
             std::string(""));
@@ -480,7 +608,7 @@ ModelData* Raw2Gltf(
               draco::GeometryAttribute::POSITION,
               draco::DT_FLOAT32);
           auto accessor =
-              gltf->AddAttributeToPrimitive<Vec3f>(buffer, surfaceModel, *primitive, ATTR_POSITION);
+              gltf.AddAttributeToPrimitive(buffer, surfaceModel, *primitive, ATTR_POSITION);
 
           accessor->min = toStdVec(rawSurface.bounds.min);
           accessor->max = toStdVec(rawSurface.bounds.max);
@@ -493,12 +621,12 @@ ModelData* Raw2Gltf(
               draco::GeometryAttribute::NORMAL,
               draco::DT_FLOAT32);
           const auto _ =
-              gltf->AddAttributeToPrimitive<Vec3f>(buffer, surfaceModel, *primitive, ATTR_NORMAL);
+              gltf.AddAttributeToPrimitive(buffer, surfaceModel, *primitive, ATTR_NORMAL);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_TANGENT) != 0) {
           const AttributeDefinition<Vec4f> ATTR_TANGENT("TANGENT", &RawVertex::tangent, GLT_VEC4F);
-          const auto _ = gltf->AddAttributeToPrimitive<Vec4f>(
-              buffer, surfaceModel, *primitive, ATTR_TANGENT);
+          const auto _ =
+              gltf.AddAttributeToPrimitive(buffer, surfaceModel, *primitive, ATTR_TANGENT);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_COLOR) != 0) {
           const AttributeDefinition<Vec4f> ATTR_COLOR(
@@ -508,7 +636,7 @@ ModelData* Raw2Gltf(
               draco::GeometryAttribute::COLOR,
               draco::DT_FLOAT32);
           const auto _ =
-              gltf->AddAttributeToPrimitive<Vec4f>(buffer, surfaceModel, *primitive, ATTR_COLOR);
+              gltf.AddAttributeToPrimitive(buffer, surfaceModel, *primitive, ATTR_COLOR);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_UV0) != 0) {
           const AttributeDefinition<Vec2f> ATTR_TEXCOORD_0(
@@ -517,7 +645,7 @@ ModelData* Raw2Gltf(
               GLT_VEC2F,
               draco::GeometryAttribute::TEX_COORD,
               draco::DT_FLOAT32);
-          const auto _ = gltf->AddAttributeToPrimitive<Vec2f>(
+          const auto _ = gltf.AddAttributeToPrimitive(
               buffer, surfaceModel, *primitive, ATTR_TEXCOORD_0);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_UV1) != 0) {
@@ -527,7 +655,7 @@ ModelData* Raw2Gltf(
               GLT_VEC2F,
               draco::GeometryAttribute::TEX_COORD,
               draco::DT_FLOAT32);
-          const auto _ = gltf->AddAttributeToPrimitive<Vec2f>(
+          const auto _ = gltf.AddAttributeToPrimitive(
               buffer, surfaceModel, *primitive, ATTR_TEXCOORD_1);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_JOINT_INDICES) != 0) {
@@ -538,7 +666,7 @@ ModelData* Raw2Gltf(
               draco::GeometryAttribute::GENERIC,
               draco::DT_UINT16);
           const auto _ =
-              gltf->AddAttributeToPrimitive<Vec4i>(buffer, surfaceModel, *primitive, ATTR_JOINTS);
+              gltf.AddAttributeToPrimitive(buffer, surfaceModel, *primitive, ATTR_JOINTS);
         }
         if ((surfaceModel.GetVertexAttributes() & RAW_VERTEX_ATTRIBUTE_JOINT_WEIGHTS) != 0) {
           const AttributeDefinition<Vec4f> ATTR_WEIGHTS(
@@ -548,7 +676,7 @@ ModelData* Raw2Gltf(
               draco::GeometryAttribute::GENERIC,
               draco::DT_FLOAT32);
           const auto _ =
-              gltf->AddAttributeToPrimitive<Vec4f>(buffer, surfaceModel, *primitive, ATTR_WEIGHTS);
+              gltf.AddAttributeToPrimitive(buffer, surfaceModel, *primitive, ATTR_WEIGHTS);
         }
 
         // each channel present in the mesh always ends up a target in the primitive
@@ -571,8 +699,8 @@ ModelData* Raw2Gltf(
               tangents.push_back(blendVertex.tangent);
             }
           }
-          std::shared_ptr<AccessorData> pAcc = gltf->AddAccessorWithView(
-              *gltf->GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER),
+          std::shared_ptr<AccessorData> pAcc = gltf.AddAccessorWithView(
+              *gltf.GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER),
               GLT_VEC3F,
               positions,
               channel.name);
@@ -581,8 +709,8 @@ ModelData* Raw2Gltf(
 
           std::shared_ptr<AccessorData> nAcc;
           if (!normals.empty()) {
-            nAcc = gltf->AddAccessorWithView(
-                *gltf->GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER),
+            nAcc = gltf.AddAccessorWithView(
+                *gltf.GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER),
                 GLT_VEC3F,
                 normals,
                 channel.name);
@@ -590,8 +718,8 @@ ModelData* Raw2Gltf(
 
           std::shared_ptr<AccessorData> tAcc;
           if (!tangents.empty()) {
-            nAcc = gltf->AddAccessorWithView(
-                *gltf->GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER),
+            nAcc = gltf.AddAccessorWithView(
+                *gltf.GetAlignedBufferView(buffer, BufferViewData::GL_ARRAY_BUFFER),
                 GLT_VEC4F,
                 tangents,
                 channel.name);
@@ -633,7 +761,8 @@ ModelData* Raw2Gltf(
         draco::Status status = encoder.EncodeMeshToBuffer(*primitive->dracoMesh, &dracoBuffer);
         assert(status.code() == draco::Status::OK);
 
-        auto view = gltf->AddRawBufferView(buffer, dracoBuffer.data(), to_uint32(dracoBuffer.size()));
+        auto view =
+            gltf.AddRawBufferView(buffer, dracoBuffer.data(), to_uint32(dracoBuffer.size()));
         primitive->NoteDracoBuffer(*view);
       }
       mesh->AddPrimitive(primitive);
@@ -645,7 +774,7 @@ ModelData* Raw2Gltf(
 
     for (int i = 0; i < raw.GetNodeCount(); i++) {
       const RawNode& node = raw.GetNode(i);
-      auto nodeData = gltf->nodes.ptrs[i];
+      auto nodeData = gltf.nodes.ptrs[i];
 
       //
       // Assign mesh to node
@@ -675,11 +804,11 @@ ModelData* Raw2Gltf(
             }
 
             // Write out inverseBindMatrices
-            auto accIBM = gltf->AddAccessorAndView(buffer, GLT_MAT4F, inverseBindMatrices);
+            auto accIBM = gltf.AddAccessorAndView(buffer, GLT_MAT4F, inverseBindMatrices);
 
             auto skeletonRoot = require(nodesById, rawSurface.skeletonRootId);
-            auto skin = *gltf->skins.hold(new SkinData(jointIndexes, *accIBM, skeletonRoot));
-            nodeData->SetSkin(skin.ix);
+            auto skin = gltf.skins.hold(new SkinData(jointIndexes, *accIBM, skeletonRoot));
+            nodeData->SetSkin(skin->ix);
           }
         }
       }
@@ -691,7 +820,7 @@ ModelData* Raw2Gltf(
 
     for (int i = 0; i < raw.GetCameraCount(); i++) {
       const RawCamera& cam = raw.GetCamera(i);
-      CameraData& camera = *gltf->cameras.hold(new CameraData());
+      CameraData& camera = *(gltf.cameras.hold(new CameraData()));
       camera.name = cam.name;
 
       if (cam.mode == RawCamera::CAMERA_MODE_PERSPECTIVE) {
@@ -736,7 +865,7 @@ ModelData* Raw2Gltf(
             type = LightData::Type::Spot;
             break;
         }
-        const auto _ = gltf->lights.hold(new LightData(
+        const auto _ = gltf.lights.hold(new LightData(
             light.name,
             type,
             light.color,
@@ -749,7 +878,7 @@ ModelData* Raw2Gltf(
       }
       for (int i = 0; i < raw.GetNodeCount(); i++) {
         const RawNode& node = raw.GetNode(i);
-        const auto nodeData = gltf->nodes.ptrs[i];
+        const auto nodeData = gltf.nodes.ptrs[i];
 
         if (node.lightIx >= 0) {
           // we lean on the fact that in this simple case, raw and gltf indexing are aligned
@@ -760,124 +889,19 @@ ModelData* Raw2Gltf(
   }
 
   NodeData& rootNode = require(nodesById, raw.GetRootNode());
-  const SceneData& rootScene = *gltf->scenes.hold(new SceneData(DEFAULT_SCENE_NAME, rootNode));
+  constexpr const char* kDefaultSceneName = "Root Scene";
+  return gltf.scenes.hold(new SceneData(kDefaultSceneName, rootNode));
+}
 
-  if (options.outputBinary) {
-    // note: glTF binary is little-endian
-    const char glbHeader[] = {
-        'g',
-        'l',
-        'T',
-        'F', // magic
-        0x02,
-        0x00,
-        0x00,
-        0x00, // version
-        0x00,
-        0x00,
-        0x00,
-        0x00, // total length: written in later
-    };
-    gltfOutStream.write(glbHeader, 12);
+ModelData* Raw2Gltf(
+    std::ofstream& gltfOutStream,
+    const std::string& outputFolder,
+    const RawModel& raw,
+    const GltfOptions& options) {
+  std::unique_ptr<GltfModel> gltf(new GltfModel(options));
+  std::shared_ptr<SceneData> sceneDataPtr = PrepareGltfModel(outputFolder, raw, options, *gltf);
 
-    // binary glTF 2.0 has a sub-header for each of the JSON and BIN chunks
-    const char glb2JsonHeader[] = {
-        0x00,
-        0x00,
-        0x00,
-        0x00, // chunk length: written in later
-        'J',
-        'S',
-        'O',
-        'N', // chunk type: 0x4E4F534A aka JSON
-    };
-    gltfOutStream.write(glb2JsonHeader, 8);
-  }
-
-  {
-    std::vector<std::string> extensionsUsed, extensionsRequired;
-    if (options.useKHRMatUnlit) {
-      extensionsUsed.push_back(KHR_MATERIALS_CMN_UNLIT);
-    }
-    if (!gltf->lights.ptrs.empty()) {
-      extensionsUsed.push_back(KHR_LIGHTS_PUNCTUAL);
-    }
-    if (options.draco.enabled) {
-      extensionsUsed.push_back(KHR_DRACO_MESH_COMPRESSION);
-      extensionsRequired.push_back(KHR_DRACO_MESH_COMPRESSION);
-    }
-
-    json glTFJson{{"asset", {{"generator", "FBX2glTF v" + FBX2GLTF_VERSION}, {"version", "2.0"}}},
-                  {"scene", rootScene.ix}};
-    if (!extensionsUsed.empty()) {
-      glTFJson["extensionsUsed"] = extensionsUsed;
-    }
-    if (!extensionsRequired.empty()) {
-      glTFJson["extensionsRequired"] = extensionsRequired;
-    }
-
-    gltf->serializeHolders(glTFJson);
-
-    gltfOutStream << glTFJson.dump(options.outputBinary ? 0 : 4);
-  }
-  if (options.outputBinary) {
-    uint32_t jsonLength = (uint32_t)gltfOutStream.tellp() - 20;
-    // the binary body must begin on a 4-aligned address, so pad json with spaces if necessary
-    while ((jsonLength % 4) != 0) {
-      gltfOutStream.put(' ');
-      jsonLength++;
-    }
-
-    uint32_t binHeader = (uint32_t)gltfOutStream.tellp();
-    // binary glTF 2.0 has a sub-header for each of the JSON and BIN chunks
-    const char glb2BinaryHeader[] = {
-        0x00,
-        0x00,
-        0x00,
-        0x00, // chunk length: written in later
-        'B',
-        'I',
-        'N',
-        0x00, // chunk type: 0x004E4942 aka BIN
-    };
-    gltfOutStream.write(glb2BinaryHeader, 8);
-
-    // append binary buffer directly to .glb file
-    size_t binaryLength = gltf->binary->size();
-    gltfOutStream.write((const char*)&(*gltf->binary)[0], binaryLength);
-    while ((binaryLength % 4) != 0) {
-      gltfOutStream.put('\0');
-      binaryLength++;
-    }
-    uint32_t totalLength = to_uint32(gltfOutStream.tellp());
-
-    // seek back to sub-header for json chunk
-    gltfOutStream.seekp(8);
-
-    // write total length, little-endian
-    gltfOutStream.put((totalLength >> 0) & 0xFF);
-    gltfOutStream.put((totalLength >> 8) & 0xFF);
-    gltfOutStream.put((totalLength >> 16) & 0xFF);
-    gltfOutStream.put((totalLength >> 24) & 0xFF);
-
-    // write JSON length, little-endian
-    gltfOutStream.put((jsonLength >> 0) & 0xFF);
-    gltfOutStream.put((jsonLength >> 8) & 0xFF);
-    gltfOutStream.put((jsonLength >> 16) & 0xFF);
-    gltfOutStream.put((jsonLength >> 24) & 0xFF);
-
-    // seek back to the gltf 2.0 binary chunk header
-    gltfOutStream.seekp(binHeader);
-
-    // write total length, little-endian
-    gltfOutStream.put((binaryLength >> 0) & 0xFF);
-    gltfOutStream.put((binaryLength >> 8) & 0xFF);
-    gltfOutStream.put((binaryLength >> 16) & 0xFF);
-    gltfOutStream.put((binaryLength >> 24) & 0xFF);
-
-    // be tidy and return write pointer to end-of-file
-    gltfOutStream.seekp(0, std::ios::end);
-  }
+  WriteGLTF(gltfOutStream, options, gltf, *sceneDataPtr);
 
   return new ModelData(gltf->binary);
 }

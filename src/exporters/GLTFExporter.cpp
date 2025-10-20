@@ -1,11 +1,14 @@
 #include "exporters/GLTFExporter.h"
+#include <fmt/printf.h>
 
 #include <cstdint>
 #include <fstream>
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 #include "fbx/Fbx2Raw.hpp"
+#include "gltf/GltfModel.hpp"
 #include "gltf/Raw2Gltf.hpp"
 bool GLTFExporter::Export(
     const std::string& outputPath,
@@ -34,8 +37,13 @@ bool GLTFExporter::Export(
     fmt::fprintf(stderr, "ERROR:: Couldn't open file for writing: %s\n", outputPath.c_str());
     return false;
   }
-  std::unique_ptr<ModelData> data_render_model(
-      Raw2Gltf(outStream, OutputFolder(), raw, GLTFOptions()));
+
+  std::unique_ptr<GltfModel> gltf(new GltfModel(GLTFOptions()));
+  std::shared_ptr<SceneData> sceneDataPtr = PrepareGltfModel(OutputFolder(), raw, GLTFOptions(), *gltf);
+
+  WriteGLTF(outStream, GLTFOptions(), gltf, *sceneDataPtr);
+
+  std::unique_ptr<ModelData> data_render_model = std::make_unique<ModelData>(ModelData(gltf->binary));
 
   if (GLTFOptions().outputBinary) {
     fmt::printf(

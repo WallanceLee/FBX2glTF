@@ -25,8 +25,9 @@
 
 #define FBX2GLTF_VERSION std::string("0.9.7")
 
+// Include both format and printf headers for full functionality
+#include <fmt/format.h>
 #include <fmt/printf.h>
-
 #include <fbxsdk.h>
 
 #if defined(_WIN32)
