@@ -10,6 +10,7 @@
 #include <fbxsdk/core/arch/fbxtypes.h>
 #include <fbxsdk/core/fbxproperty.h>
 #include <fbxsdk/scene/shading/fbxfiletexture.h>
+#include <fmt/format.h>
 #include <fmt/printf.h>
 
 #include <fbx/materials/RoughnessMetallicMaterials.hpp>

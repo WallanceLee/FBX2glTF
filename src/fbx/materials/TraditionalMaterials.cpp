@@ -6,9 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <fbx/materials/TraditionalMaterials.hpp>
+#include <cfloat>
+#include <fbxsdk/core/arch/fbxtypes.h>
+#include <fbxsdk/core/fbxproperty.h>
 #include <fbxsdk/scene/shading/fbxfiletexture.h>
+#include <fmt/format.h>
 #include <fmt/printf.h>
+
+#include "fbx/materials/TraditionalMaterials.hpp"
+#include <utils/String_Utils.hpp>
 using namespace fbxsdk;
 
 std::unique_ptr<FbxTraditionalMaterialInfo> FbxTraditionalMaterialResolver::resolve() const {
