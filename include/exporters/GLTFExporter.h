@@ -12,9 +12,7 @@ class GLTFExporter : public ExporterBase {
       const std::string& outputFolder,
       GltfOptions& glTFOptions)
       : filePath_(filePath), outputFolder_(outputFolder), glTFOptions_(glTFOptions) {};
-  bool Export(
-      const std::string& outputPath,
-      std::vector<std::function<Vec2f(Vec2f)>>& texturesTransforms) override;
+  bool Export(std::vector<std::function<Vec2f(Vec2f)>>& texturesTransforms) override;
   std::string FilePath() const {
     return filePath_;
   }

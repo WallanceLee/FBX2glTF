@@ -17,6 +17,7 @@
 
 #include "exporters/ExporterBase.hpp"
 #include "exporters/GLTFExporter.h"
+#include "exporters/TilesetExporter.h"
 #include "utils/File_Utils.hpp"
 
 bool verboseOutput = false;
@@ -297,44 +298,21 @@ int main(int argc, char* argv[]) {
     // if -o is not given, default to the basename of the .fbx
     outputPath = "./" + FileUtils::GetFileBase(inputPath);
   }
-  // the output folder in .gltf mode, not used for .glb
-  std::string outputFolder;
-
-  // the path of the actual .glb or .gltf file
-  std::string modelPath;
-  const auto& suffix = FileUtils::GetFileSuffix(outputPath);
-
-  // Assume binary output if extension is glb
-  if (suffix.has_value() && suffix.value() == "glb") {
-    gltfOptions.outputBinary = true;
+  if (std::filesystem::exists(outputPath)) {
+    std::filesystem::remove_all(outputPath);
+  }
+  if (!std::filesystem::create_directories(outputPath)) {
+    fmt::fprintf(stderr, "Failed to create output directory '%s'\n", outputPath.c_str());
   }
 
-  if (gltfOptions.outputBinary) {
-    // add .glb to output path, unless it already ends in exactly that
-    if (suffix.has_value() && suffix.value() == "glb") {
-      modelPath = outputPath;
-    } else {
-      modelPath = outputPath + ".glb";
-    }
-    // if the extension is gltf set the output folder to the parent directory
-  } else if (suffix.has_value() && suffix.value() == "gltf") {
-    outputFolder = FileUtils::getFolder(outputPath) + "/";
-    modelPath = outputPath;
-  } else {
-    // in gltf mode, we create a folder and write into that
-    outputFolder = fmt::format("{}_out/", outputPath.c_str());
-    modelPath = outputFolder + FileUtils::GetFileName(outputPath) + ".gltf";
-  }
-  if (!FileUtils::CreatePath(modelPath.c_str())) {
-    fmt::fprintf(stderr, "ERROR: Failed to create folder: %s'\n", outputFolder.c_str());
-    return 1;
-  }
+  gltfOptions.outputBinary = true;
 
   std::unique_ptr<ExporterBase> exporterPtr;
   if (gltfOptions.format == OutputFormat::glTF) {
-    exporterPtr = std::make_unique<GLTFExporter>(inputPath, outputFolder, gltfOptions);
+    exporterPtr = std::make_unique<GLTFExporter>(inputPath, outputPath, gltfOptions);
   } else if (gltfOptions.format == OutputFormat::Tileset) {
+    exporterPtr = std::make_unique<TilesetExporter>(inputPath, outputPath, gltfOptions);
   }
 
-  exporterPtr->Export(modelPath, texturesTransforms);
+  exporterPtr->Export(texturesTransforms);
 }

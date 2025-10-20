@@ -1,18 +1,18 @@
 #include "exporters/GLTFExporter.h"
+
 #include <fmt/printf.h>
 
-#include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <memory>
 #include <string>
 #include <vector>
+
 #include "gltf/GltfModel.hpp"
 #include "gltf/Raw2Gltf.hpp"
 #include "loader/FbxLoader.h"
-bool GLTFExporter::Export(
-    const std::string& outputPath,
-    std::vector<std::function<Vec2f(Vec2f)>>& texturesTransforms) {
+bool GLTFExporter::Export(std::vector<std::function<Vec2f(Vec2f)>>& texturesTransforms) {
   FbxLoader loader(FilePath(), texturesTransforms);
   loader.Load();
   RawModel &raw = loader.FbxRawModel();
@@ -20,6 +20,7 @@ bool GLTFExporter::Export(
   std::ofstream outStream; // note: auto-flushes in destructor
   const auto streamStart = outStream.tellp();
 
+  std::string outputPath = std::filesystem::path(outputFolder_) / "output.glb";
   outStream.open(outputPath, std::ios::trunc | std::ios::ate | std::ios::out | std::ios::binary);
   if (outStream.fail()) {
     fmt::fprintf(stderr, "ERROR:: Couldn't open file for writing: %s\n", outputPath.c_str());
