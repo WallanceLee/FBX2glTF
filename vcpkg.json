@@ -9,5 +9,11 @@
     "nlohmann-json",
     "stb",
     "zlib"
+  ],
+  "overrides": [
+    {
+        "name": "fmt",
+        "version": "9.1.0"
+    }
   ]
 }
