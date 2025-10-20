@@ -20,7 +20,7 @@ class FbxLoader {
       : filePath_(filePath), textureTransforms_(textureTransforms) {
     _load();
   }
-  ~FbxLoader();
+  ~FbxLoader() = default;
   bool Load();
   RawModel& FbxRawModel() const {
     return *rawModelPtr_;

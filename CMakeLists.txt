@@ -93,6 +93,8 @@ set(LIB_SOURCE_FILES
         src/utils/File_Utils.cpp
         src/utils/Image_Utils.cpp
         src/exporters/GLTFExporter.cpp
+        src/exporters/TilesetExporter.cpp
+        src/loader/FBXLoader.cpp
 )
 
 add_library(libFBX2glTF STATIC ${LIB_SOURCE_FILES})

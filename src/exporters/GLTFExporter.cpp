@@ -7,27 +7,15 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "fbx/Fbx2Raw.hpp"
 #include "gltf/GltfModel.hpp"
 #include "gltf/Raw2Gltf.hpp"
+#include "loader/FbxLoader.h"
 bool GLTFExporter::Export(
     const std::string& outputPath,
     std::vector<std::function<Vec2f(Vec2f)>>& texturesTransforms) {
-  RawModel raw;
-
-  if (verboseOutput) {
-    fmt::printf("Loading FBX File: %s\n", FilePath());
-  }
-  if (!LoadFBXFile(raw, FilePath(), {"png", "jpg", "jpeg"}, GLTFOptions())) {
-    fmt::fprintf(stderr, "ERROR:: Failed to parse FBX: %s\n", FilePath());
-    return false;
-  }
-
-  if (!texturesTransforms.empty()) {
-    raw.TransformTextures(texturesTransforms);
-  }
-  raw.Condense();
-  raw.TransformGeometry(GLTFOptions().computeNormals);
+  FbxLoader loader(FilePath(), texturesTransforms);
+  loader.Load();
+  RawModel &raw = loader.FbxRawModel();
 
   std::ofstream outStream; // note: auto-flushes in destructor
   const auto streamStart = outStream.tellp();
